@@ -4,10 +4,17 @@ from pygame.locals import *
 
 from entity import *
 
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+BLUE = (0, 0, 255)
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+
 WIDTH, HEIGHT = 1280, 720
 FPS = 60
 FRICTION_MAGNITUDE = 0.4
 PLAYER_DASH_MAGNITUDE = 30
+DASH_COOLDOWN = 2
 PLAYER_ACCELERATION_MAGNITUDE = 0.6
 PLAYER_MAX_VELOCITY = 8
 PLAYER_SIZE = 20
@@ -23,24 +30,30 @@ pygame.display.set_caption("Top Down")
 window = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
 
-player_position = pygame.Vector2(WIDTH/2, HEIGHT/2)
-player_accleration = pygame.Vector2(0, 0)
-player_velocity = pygame.Vector2(0, 0)
-player = Entity(window, player_position, player_velocity,
-                player_accleration, PLAYER_MAX_VELOCITY, PLAYER_SIZE)
+last_dash = 0
+current_time = DASH_COOLDOWN * 1000
+
+initial_player_position = pygame.Vector2(WIDTH/2, HEIGHT/2)
+initial_player_accleration = pygame.Vector2(0, 0)
+initial_player_velocity = pygame.Vector2(0, 0)
+player = Entity(window, initial_player_position, initial_player_velocity,
+                initial_player_accleration, PLAYER_MAX_VELOCITY, PLAYER_SIZE)
 
 
 def main() -> None:
+    global current_time, last_dash
     player_state = PLAYER_IDLE
+    current_time += clock.get_time()
+
     for event in pygame.event.get():
         if event.type == QUIT:
             pygame.quit()
             sys.exit()
 
         if event.type == KEYUP:
-            if event.key == K_SPACE:
-                mouse_position = pygame.mouse.get_pos()
-                mouse_vector = pygame.Vector2(mouse_position)
+            if event.key == K_SPACE and current_time - last_dash >= DASH_COOLDOWN * 1000:
+                last_dash = current_time
+                mouse_vector = pygame.Vector2(pygame.mouse.get_pos())
                 relative_distance = mouse_vector.distance_to(player.position)
 
                 if relative_distance > player.size:
@@ -54,9 +67,13 @@ def main() -> None:
 
     keys = pygame.key.get_pressed()
     if keys[K_SPACE]:
-        mouse_position = pygame.mouse.get_pos()
-        pygame.draw.line(window, (0, 0, 0),
-                         player.position, mouse_position, 3)
+        if current_time - last_dash >= DASH_COOLDOWN * 1000:
+            color = GREEN
+        else:
+            color = RED
+        mouse_vector = pygame.Vector2(pygame.mouse.get_pos())
+
+        pygame.draw.line(window, color, player.position, mouse_vector, 3)
 
     if keys[K_UP] or keys[K_w]:
         player_state = PLAYER_MOVING
