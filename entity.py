@@ -2,7 +2,7 @@ import pygame
 from pygame.locals import *
 
 
-class Player():
+class Entity():
     def __init__(self, window: pygame.Surface, position: pygame.Vector2,
                  velocity: pygame.Vector2, acceleration: pygame.Vector2,
                  max_velocity: float, size: float) -> None:
@@ -16,12 +16,12 @@ class Player():
     def applyForce(self, force: pygame.Vector2) -> None:
         self._acceleration += force
 
-    def update(self) -> None:
+    def update(self, player_state: tuple) -> None:
         self._velocity += self._acceleration
         self.position += self._velocity
 
-        # Constrain velocity
-        if self._velocity.magnitude() > self.max_velocity:
+        # Constrain velocity if state is not dashing
+        if player_state[0] != player_state[1] and self._velocity.magnitude() > self.max_velocity:
             self._velocity = self._velocity.normalize() * self.max_velocity
 
         # Reset acceleration to 0 every frame
