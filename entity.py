@@ -81,7 +81,7 @@ class Enemy(Entity):
     def constrain(self, p1: pygame.Vector2, p2: pygame.Vector2):
         if self.position.x < p1.x:
             self.applyForce(pygame.Vector2(1, 0))
-            # self.position.x = p1.x + self.size/2 + 10
+            self.position.x = p1.x + self.size/2
         elif self.position.x > p2.x:
             self.applyForce(pygame.Vector2(-1, 0))
             self.position.x = p2.x - self.size/2
