@@ -1,3 +1,4 @@
+import random
 import sys
 import pygame
 from pygame.locals import *
@@ -16,8 +17,12 @@ FRICTION_MAGNITUDE = 0.4
 PLAYER_DASH_MAGNITUDE = 30
 DASH_COOLDOWN = 2
 PLAYER_ACCELERATION_MAGNITUDE = 0.6
+ENEMY_ACCELERATION_MAGNITUDE = 0.4
 PLAYER_MAX_VELOCITY = 8
-PLAYER_SIZE = 20
+ENEMY_MAX_VELOCITY = 6
+PLAYER_SIZE = 30
+ENEMY_SIZE = 20
+ENEMY_IDLE_TIME = (0.2, 2)
 
 # Player States
 PLAYER_IDLE = 0
@@ -34,10 +39,23 @@ last_dash = 0
 current_time = DASH_COOLDOWN * 1000
 
 initial_player_position = pygame.Vector2(WIDTH/2, HEIGHT/2)
-initial_player_accleration = pygame.Vector2(0, 0)
 initial_player_velocity = pygame.Vector2(0, 0)
+initial_player_accleration = pygame.Vector2(0, 0)
+
+
 player = Entity(window, initial_player_position, initial_player_velocity,
                 initial_player_accleration, PLAYER_MAX_VELOCITY, PLAYER_SIZE)
+enemies = []
+
+for i in range(10):
+    initial_enemy_position = pygame.Vector2(random.randint(
+        ENEMY_SIZE, WIDTH - ENEMY_SIZE), random.randint(ENEMY_SIZE, HEIGHT - ENEMY_SIZE))
+    initial_enemy_velocity = pygame.Vector2(0, 0)
+    initial_enemy_accleration = pygame.Vector2(0, 0)
+
+    enemy = Enemy(window, initial_enemy_position, initial_enemy_velocity,
+                  initial_enemy_accleration, ENEMY_MAX_VELOCITY, ENEMY_SIZE)
+    enemies.append(enemy)
 
 
 def main() -> None:
@@ -98,8 +116,15 @@ def main() -> None:
             if player.velocity.magnitude() < 0.1:
                 player.velocity *= 0
 
-    player.update((player_state, PLAYER_DASHING))
-    player.render()
+    player.update(player_state == PLAYER_DASHING)
+    player.render(BLUE)
+    for enemy in enemies:
+        enemy.update()
+        enemy.wander(ENEMY_IDLE_TIME)
+        enemy.follow(player, ENEMY_ACCELERATION_MAGNITUDE)
+        # TODO: Remove constrain after implementing camera movement
+        enemy.constrain(pygame.Vector2(0, 0), pygame.Vector2(WIDTH, HEIGHT))
+        enemy.render(RED)
 
 
 if __name__ == "__main__":
