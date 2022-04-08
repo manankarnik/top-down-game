@@ -10,19 +10,19 @@ git clone https://github.com/MananKarnik/top-down-game.git
 
 ## Install dependencies
 
+```sh
+pip install -r requirements.txt
+```
+
+## Run the game
+
 ### Change into project directory
 
 ```sh
 cd top-down-game
 ```
 
-### Use pip to install dependencies
-
-```sh
-pip install -r requirements.txt
-```
-
-## Run the game
+### Execute main.py
 
 ```sh
 python src/main.py
