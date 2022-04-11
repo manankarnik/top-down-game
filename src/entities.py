@@ -3,9 +3,10 @@ import pygame
 from pygame.locals import *
 
 from config import *
+import objects
 
 PLAYER_ACCELERATION_MAGNITUDE = 0.6
-PLAYER_MAX_VELOCITY = 8
+PLAYER_MAX_VELOCITY = 5
 FRICTION_MAGNITUDE = 0.4
 PLAYER_DASH_COOLDOWN = 2
 PLAYER_DASH_MAGNITUDE = 50
@@ -44,6 +45,15 @@ class Player(Entity):
             self.image, (50, 50))
         self.rect = self.image.get_rect(center=self.position)
 
+        self.dash_indicator_image = pygame.image.load(
+            "src/Assets/dash_indicator_active.png").convert_alpha()
+        self.dash_indicator_image = pygame.transform.scale(
+            self.dash_indicator_image, (32, 32))
+
+        self.dash_indicator = objects.Sprite(
+            self.dash_indicator_image, self.position + pygame.Vector2(50, 0))
+        self.prev_angle = 0
+
         self.state = PLAYER_IDLE
 
         self.current_time = PLAYER_DASH_COOLDOWN * 1000
@@ -53,10 +63,10 @@ class Player(Entity):
         super().move()
 
         # Velocity constains
-        if self.state != PLAYER_DASHING and self.velocity.magnitude() > PLAYER_MAX_VELOCITY:
+        if self.state == PLAYER_MOVING and self.velocity.magnitude() > PLAYER_MAX_VELOCITY:
             self.velocity = self.velocity.normalize() * PLAYER_MAX_VELOCITY
-        elif self.velocity.magnitude() > PLAYER_MAX_VELOCITY * 3:
-            self.velocity = self.velocity.normalize() * (PLAYER_MAX_VELOCITY * 3)
+        elif self.velocity.magnitude() > PLAYER_MAX_VELOCITY * 2:
+            self.velocity = self.velocity.normalize() * (PLAYER_MAX_VELOCITY * 2)
 
         # Deceleration
         if self.state == PLAYER_IDLE and self.velocity.magnitude() > 0:
@@ -69,8 +79,8 @@ class Player(Entity):
 
     def keyup(self, key):
         if key == K_SPACE:
+            self.dash_indicator.kill()
             if self.current_time - self.last_dash >= PLAYER_DASH_COOLDOWN * 1000:
-
                 self.last_dash = self.current_time
                 mouse_vector = pygame.Vector2(pygame.mouse.get_pos())
                 relative_distance = mouse_vector.distance_to(
@@ -90,7 +100,31 @@ class Player(Entity):
     def handleInput(self):
         keys = pygame.key.get_pressed()
         if keys[K_SPACE]:
-            pass
+            if self.current_time - self.last_dash >= PLAYER_DASH_COOLDOWN * 1000:
+                self.dash_indicator_image = pygame.image.load(
+                    "src/Assets/dash_indicator_active.png").convert_alpha()
+            else:
+                self.dash_indicator_image = pygame.image.load(
+                    "src/Assets/dash_indicator_inactive.png").convert_alpha()
+
+            self.dash_indicator_image = pygame.transform.scale(
+                self.dash_indicator_image, (32, 32))
+            mouse_vector = pygame.Vector2(pygame.mouse.get_pos())
+            relative_vector = mouse_vector - pygame.Vector2(CENTER)
+            relative_distance = relative_vector.magnitude()
+
+            if relative_distance > self.rect.size[0]:
+                angle = relative_vector.angle_to(pygame.Vector2(1, 0))
+                offset = pygame.Vector2(
+                    50 * cos(angle/60), 50 * -sin(angle/60))
+
+                self.dash_indicator.image = pygame.transform.rotozoom(
+                    self.dash_indicator_image, angle, 1)
+                self.dash_indicator.rect = self.dash_indicator.image.get_rect(
+                    center=self.position + offset)
+                self.dash_indicator.add(self.group)
+
+                self.prev_angle = angle
 
         if keys[K_UP] or keys[K_w]:
             self.state = PLAYER_MOVING
