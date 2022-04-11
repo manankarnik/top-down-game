@@ -63,19 +63,21 @@ class Player(Entity):
         super().move()
 
         # Velocity constains
-        if self.state == PLAYER_MOVING and self.velocity.magnitude() > PLAYER_MAX_VELOCITY:
+        if self.state != PLAYER_DASHING and self.velocity.magnitude() > PLAYER_MAX_VELOCITY:
             self.velocity = self.velocity.normalize() * PLAYER_MAX_VELOCITY
-        elif self.velocity.magnitude() > PLAYER_MAX_VELOCITY * 2:
-            self.velocity = self.velocity.normalize() * (PLAYER_MAX_VELOCITY * 2)
+        elif self.velocity.magnitude() > PLAYER_MAX_VELOCITY * 3:
+            self.velocity = self.velocity.normalize() * (PLAYER_MAX_VELOCITY * 3)
 
         # Deceleration
-        if self.state == PLAYER_IDLE and self.velocity.magnitude() > 0:
+        if self.state != PLAYER_MOVING and self.velocity.magnitude() > 0:
             self.applyForce(self.velocity.normalize() * -FRICTION_MAGNITUDE)
         if self.velocity.magnitude() < 0.1:
             self.velocity *= 0
 
         self.current_time += clock.get_time()
-        self.state = PLAYER_IDLE
+
+        if self.state != PLAYER_DASHING or self.current_time - self.last_dash > 500:
+            self.state = PLAYER_IDLE
 
     def keyup(self, key):
         if key == K_SPACE:
@@ -126,22 +128,22 @@ class Player(Entity):
 
                 self.prev_angle = angle
 
-        if keys[K_UP] or keys[K_w]:
+        if keys[K_UP] or keys[K_w] and self.state != PLAYER_DASHING:
             self.state = PLAYER_MOVING
             self.applyForce(pygame.Vector2(
                 0, -PLAYER_ACCELERATION_MAGNITUDE))
 
-        if keys[K_DOWN] or keys[K_s]:
+        if keys[K_DOWN] or keys[K_s] and self.state != PLAYER_DASHING:
             self.state = PLAYER_MOVING
             self.applyForce(pygame.Vector2(
                 0, PLAYER_ACCELERATION_MAGNITUDE))
 
-        if keys[K_LEFT] or keys[K_a]:
+        if keys[K_LEFT] or keys[K_a] and self.state != PLAYER_DASHING:
             self.state = PLAYER_MOVING
             self.applyForce(
                 pygame.Vector2(-PLAYER_ACCELERATION_MAGNITUDE, 0))
 
-        if keys[K_RIGHT] or keys[K_d]:
+        if keys[K_RIGHT] or keys[K_d] and self.state != PLAYER_DASHING:
             self.state = PLAYER_MOVING
             self.applyForce(pygame.Vector2(
                 PLAYER_ACCELERATION_MAGNITUDE, 0))
