@@ -10,8 +10,8 @@ class Camera(pygame.sprite.Group):
         self.offset = pygame.Vector2()
 
     def centerCamera(self, player):
-        self.offset.x = player.rect.centerx - WIDTH/2
-        self.offset.y = player.rect.centery - HEIGHT/2
+        self.offset.x = player.rect.centerx - WIDTH//2
+        self.offset.y = player.rect.centery - HEIGHT//2
 
     def render(self, player) -> None:
         for sprite in sorted(self.sprites(), key=lambda sprite: sprite.rect.bottom):
