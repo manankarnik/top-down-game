@@ -1,4 +1,3 @@
-import string
 import pygame
 
 
@@ -15,6 +14,8 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 GRASS_GREEN = (126, 200, 80)
 
+CENTER = WIDTH//2, HEIGHT//2
+
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
 
@@ -25,14 +26,14 @@ def configure():
     pygame.display.set_caption("Top Down")
 
 
-class CreateSprite(pygame.sprite.Sprite):
-    def __init__(self, image_path: string, position: pygame.math.Vector2, sprite_scale: tuple = SPRITE_SCALE, group=None) -> None:
+class CustomSprite(pygame.sprite.Sprite):
+    def __init__(self, image: pygame.surface.Surface, position: pygame.math.Vector2, sprite_scale: tuple = SPRITE_SCALE, group=None) -> None:
         if group is None:
             super().__init__()
         else:
             super().__init__(group)
-        self.image = pygame.image.load(
-            image_path).convert_alpha()
+
+        self.image = image
         self.image = pygame.transform.scale(self.image, sprite_scale)
         self.rect = self.image.get_rect(center=position)
 

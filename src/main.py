@@ -9,7 +9,7 @@ import camera
 import objects
 
 camera_group = camera.Camera()
-player = entities.Player(pygame.Vector2(WIDTH/2, HEIGHT/2), camera_group)
+player = entities.Player(pygame.Vector2(CENTER), camera_group)
 trees = []
 for i in range(10):
     trees.append(objects.Tree(pygame.Vector2(random.randrange(0, WIDTH, 80),
@@ -27,6 +27,7 @@ def main() -> None:
 
         if event.type == KEYUP:
             player.keyup(event.key)
+
     player.handleInput()
     player.move()
     camera_group.update()
