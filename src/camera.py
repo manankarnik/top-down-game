@@ -14,7 +14,15 @@ class Camera(pygame.sprite.Group):
         self.offset.y = player.rect.centery - HEIGHT//2
 
     def render(self, player) -> None:
-        for sprite in sorted(self.sprites(), key=lambda sprite: sprite.rect.bottom):
+        ysorted_sprites = sorted(
+            self.sprites(), key=lambda sprite: sprite.rect.bottom)
+
+        # Append UI elements at the end to always draw on top
+        for i in range(len(ysorted_sprites)):
+            if ui_group in ysorted_sprites[i].groups():
+                ysorted_sprites.append(ysorted_sprites.pop(i))
+
+        for sprite in ysorted_sprites:
             self.centerCamera(player)
             offset_pos = sprite.rect.topleft - self.offset
             self.screen.blit(sprite.image, offset_pos)
