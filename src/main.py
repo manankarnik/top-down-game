@@ -11,7 +11,7 @@ import objects
 camera_group = camera.Camera()
 player = entities.Player(pygame.Vector2(CENTER), camera_group)
 trees = []
-for i in range(50):
+for i in range(100):
     trees.append(objects.Tree(pygame.Vector2(random.randrange(-1000, 1000, 80),
                  random.randrange(-1000, 1000, 80)), camera_group))
 
