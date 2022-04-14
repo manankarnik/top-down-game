@@ -4,7 +4,7 @@ import pygame
 # Configuration Constants
 FPS = 60
 WIDTH, HEIGHT = 1280, 720
-SPRITE_SCALE = 100, 100
+SPRITE_SCALE = 128, 128
 
 # Colors
 RED = (255, 0, 0)
