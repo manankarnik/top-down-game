@@ -1,5 +1,5 @@
 import pygame
-
+from pygame.locals import *
 from config import *
 
 
@@ -24,3 +24,12 @@ class Tree(Object):
         self.image = pygame.image.load("src/Assets/tree.png").convert_alpha()
         self.image = pygame.transform.scale(self.image, SPRITE_SCALE)
         self.rect = self.image.get_rect(center=position)
+        collider_size = (32, 3*32/4)
+        collider_sprite = pygame.surface.Surface(collider_size, flags=SRCALPHA)
+        collider_sprite.fill((255, 0, 0, 80))
+
+        self.collider = Sprite(
+            collider_sprite, self.position + pygame.Vector2(0, self.rect.size[1]/2 - collider_size[1]/2), ui_group, group)
+
+
+# position + pygame.Vector2(0, 128/2)
