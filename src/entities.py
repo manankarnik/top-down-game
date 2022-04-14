@@ -6,8 +6,8 @@ from config import *
 import objects
 
 PLAYER_ACCELERATION_MAGNITUDE = 0.6
-PLAYER_WALK_SPEED = 5
-PLAYER_RUN_SPEED = 10
+PLAYER_WALK_SPEED = 4
+PLAYER_RUN_SPEED = 6
 PLAYER_DASH_SPEED = 14
 FRICTION_MAGNITUDE = 0.4
 PLAYER_DASH_COOLDOWN = 2
@@ -135,29 +135,34 @@ class Player(Entity):
 
                 self.prev_angle = angle
 
-        if keys[K_LCTRL]:
-            self.state = PLAYER_RUNNING
-
         if keys[K_UP] or keys[K_w] and self.state != PLAYER_DASHING:
-            if self.state != PLAYER_RUNNING:
+            if keys[K_LCTRL]:
+                self.state = PLAYER_RUNNING
+            else:
                 self.state = PLAYER_WALKING
             self.applyForce(pygame.Vector2(
                 0, -PLAYER_ACCELERATION_MAGNITUDE))
 
         if keys[K_DOWN] or keys[K_s] and self.state != PLAYER_DASHING:
-            if self.state != PLAYER_RUNNING:
+            if keys[K_LCTRL]:
+                self.state = PLAYER_RUNNING
+            else:
                 self.state = PLAYER_WALKING
             self.applyForce(pygame.Vector2(
                 0, PLAYER_ACCELERATION_MAGNITUDE))
 
         if keys[K_LEFT] or keys[K_a] and self.state != PLAYER_DASHING:
-            if self.state != PLAYER_RUNNING:
+            if keys[K_LCTRL]:
+                self.state = PLAYER_RUNNING
+            else:
                 self.state = PLAYER_WALKING
             self.applyForce(
                 pygame.Vector2(-PLAYER_ACCELERATION_MAGNITUDE, 0))
 
         if keys[K_RIGHT] or keys[K_d] and self.state != PLAYER_DASHING:
-            if self.state != PLAYER_RUNNING:
+            if keys[K_LCTRL]:
+                self.state = PLAYER_RUNNING
+            else:
                 self.state = PLAYER_WALKING
             self.applyForce(pygame.Vector2(
                 PLAYER_ACCELERATION_MAGNITUDE, 0))
