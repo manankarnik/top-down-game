@@ -1,4 +1,4 @@
-from math import cos, sin
+import math
 import pygame
 from pygame.locals import *
 
@@ -55,7 +55,6 @@ class Player(Entity):
 
         self.dash_indicator = objects.Sprite(
             self.dash_indicator_image, self.position + pygame.Vector2(50, 0), ui_group)
-        self.prev_angle = 0
 
         self.state = PLAYER_IDLE
 
@@ -123,17 +122,17 @@ class Player(Entity):
             relative_distance = relative_vector.magnitude()
 
             if relative_distance > self.rect.size[0]:
-                angle = relative_vector.angle_to(pygame.Vector2(1, 0))
+                angle_in_rad = -math.atan2(relative_vector.y,
+                                           relative_vector.x)
+                angle = angle_in_rad * 180/math.pi
                 offset = pygame.Vector2(
-                    50 * cos(angle/60), 50 * -sin(angle/60))
+                    50 * math.cos(angle_in_rad), 50 * -math.sin(angle_in_rad))
 
                 self.dash_indicator.image = pygame.transform.rotozoom(
                     self.dash_indicator_image, angle, 1)
                 self.dash_indicator.rect = self.dash_indicator.image.get_rect(
                     center=self.position + offset)
                 self.dash_indicator.add(self.group)
-
-                self.prev_angle = angle
 
         if keys[K_UP] or keys[K_w] and self.state != PLAYER_DASHING:
             if keys[K_LCTRL]:
