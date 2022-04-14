@@ -6,15 +6,18 @@ from config import *
 import objects
 
 PLAYER_ACCELERATION_MAGNITUDE = 0.6
-PLAYER_MAX_VELOCITY = 5
+PLAYER_WALK_SPEED = 5
+PLAYER_RUN_SPEED = 10
+PLAYER_DASH_SPEED = 14
 FRICTION_MAGNITUDE = 0.4
 PLAYER_DASH_COOLDOWN = 2
-PLAYER_DASH_MAGNITUDE = 50
+PLAYER_DASH_DISTANCE = 50
 
 # Player states
 PLAYER_IDLE = 0
-PLAYER_MOVING = 1
-PLAYER_DASHING = 2
+PLAYER_WALKING = 1
+PLAYER_RUNNING = 2
+PLAYER_DASHING = 3
 
 
 class Entity(pygame.sprite.Sprite):
@@ -51,7 +54,7 @@ class Player(Entity):
             self.dash_indicator_image, (32, 32))
 
         self.dash_indicator = objects.Sprite(
-            self.dash_indicator_image, self.position + pygame.Vector2(50, 0))
+            self.dash_indicator_image, self.position + pygame.Vector2(50, 0), ui_group)
         self.prev_angle = 0
 
         self.state = PLAYER_IDLE
@@ -63,20 +66,24 @@ class Player(Entity):
         super().move()
 
         # Velocity constains
-        if self.state != PLAYER_DASHING and self.velocity.magnitude() > PLAYER_MAX_VELOCITY:
-            self.velocity = self.velocity.normalize() * PLAYER_MAX_VELOCITY
-        elif self.velocity.magnitude() > PLAYER_MAX_VELOCITY * 3:
-            self.velocity = self.velocity.normalize() * (PLAYER_MAX_VELOCITY * 3)
+        if self.state != PLAYER_DASHING:
+            if self.state == PLAYER_WALKING and self.velocity.magnitude() > PLAYER_WALK_SPEED:
+                self.velocity = self.velocity.normalize() * PLAYER_WALK_SPEED
+            elif self.state == PLAYER_RUNNING and self.velocity.magnitude() > PLAYER_RUN_SPEED:
+                self.velocity = self.velocity.normalize() * (PLAYER_RUN_SPEED)
 
-        # Deceleration
-        if self.state != PLAYER_MOVING and self.velocity.magnitude() > 0:
+        elif self.velocity.magnitude() > PLAYER_DASH_SPEED:
+            self.velocity = self.velocity.normalize() * (PLAYER_DASH_SPEED)
+
+            # Deceleration
+        if self.state != PLAYER_WALKING and self.state != PLAYER_RUNNING and self.velocity.magnitude() > 0:
             self.applyForce(self.velocity.normalize() * -FRICTION_MAGNITUDE)
-        if self.velocity.magnitude() < 0.1:
+        if self.velocity.magnitude() < FRICTION_MAGNITUDE:
             self.velocity *= 0
 
         self.current_time += clock.get_time()
 
-        if self.state != PLAYER_DASHING or self.current_time - self.last_dash > 500:
+        if self.state != PLAYER_DASHING or self.velocity.magnitude() < FRICTION_MAGNITUDE:
             self.state = PLAYER_IDLE
 
     def keyup(self, key):
@@ -93,8 +100,8 @@ class Player(Entity):
                         mouse_vector - pygame.Vector2(CENTER)) * 0.2
                     print(mouse_vector, CENTER, relative_vector)
 
-                    if relative_vector.magnitude() > PLAYER_DASH_MAGNITUDE:
-                        relative_vector = relative_vector.normalize() * PLAYER_DASH_MAGNITUDE
+                    if relative_vector.magnitude() > PLAYER_DASH_DISTANCE:
+                        relative_vector = relative_vector.normalize() * PLAYER_DASH_DISTANCE
 
                     self.applyForce(relative_vector)
                     self.state = PLAYER_DASHING
@@ -128,22 +135,29 @@ class Player(Entity):
 
                 self.prev_angle = angle
 
+        if keys[K_LCTRL]:
+            self.state = PLAYER_RUNNING
+
         if keys[K_UP] or keys[K_w] and self.state != PLAYER_DASHING:
-            self.state = PLAYER_MOVING
+            if self.state != PLAYER_RUNNING:
+                self.state = PLAYER_WALKING
             self.applyForce(pygame.Vector2(
                 0, -PLAYER_ACCELERATION_MAGNITUDE))
 
         if keys[K_DOWN] or keys[K_s] and self.state != PLAYER_DASHING:
-            self.state = PLAYER_MOVING
+            if self.state != PLAYER_RUNNING:
+                self.state = PLAYER_WALKING
             self.applyForce(pygame.Vector2(
                 0, PLAYER_ACCELERATION_MAGNITUDE))
 
         if keys[K_LEFT] or keys[K_a] and self.state != PLAYER_DASHING:
-            self.state = PLAYER_MOVING
+            if self.state != PLAYER_RUNNING:
+                self.state = PLAYER_WALKING
             self.applyForce(
                 pygame.Vector2(-PLAYER_ACCELERATION_MAGNITUDE, 0))
 
         if keys[K_RIGHT] or keys[K_d] and self.state != PLAYER_DASHING:
-            self.state = PLAYER_MOVING
+            if self.state != PLAYER_RUNNING:
+                self.state = PLAYER_WALKING
             self.applyForce(pygame.Vector2(
                 PLAYER_ACCELERATION_MAGNITUDE, 0))
