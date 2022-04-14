@@ -27,6 +27,8 @@ class Entity(pygame.sprite.Sprite):
         self.velocity = pygame.Vector2()
         self.acceleration = pygame.Vector2()
 
+        self.collider = None
+
     def applyForce(self, force: pygame.Vector2) -> None:
         self.acceleration += force
 
@@ -35,6 +37,9 @@ class Entity(pygame.sprite.Sprite):
         self.position += self.velocity
 
         self.rect = self.image.get_rect(center=self.position)
+        if type(self.collider) == objects.Sprite:
+            self.collider.rect = self.collider.image.get_rect(
+                center=self.position + pygame.Vector2(0, self.collider.image.get_rect().h/2))
         self.acceleration *= 0
 
 
@@ -48,6 +53,12 @@ class Player(Entity):
             self.image, (50, 50))
         self.rect = self.image.get_rect(center=self.position)
 
+        collider_size = (3*32/4, 3*32/4)
+        collider_sprite = pygame.surface.Surface(collider_size, flags=SRCALPHA)
+        collider_sprite.fill((255, 0, 0, 80))
+
+        self.collider = objects.Sprite(
+            collider_sprite, self.position + pygame.Vector2(0, self.rect.size[1]/2 - collider_size[1]/2), ui_group, group)
         self.dash_indicator_image = pygame.image.load(
             "src/Assets/dash_indicator_active.png").convert_alpha()
         self.dash_indicator_image = pygame.transform.scale(
@@ -74,7 +85,7 @@ class Player(Entity):
         elif self.velocity.magnitude() > PLAYER_DASH_SPEED:
             self.velocity = self.velocity.normalize() * (PLAYER_DASH_SPEED)
 
-            # Deceleration
+        # Deceleration
         if self.state != PLAYER_WALKING and self.state != PLAYER_RUNNING and self.velocity.magnitude() > 0:
             self.applyForce(self.velocity.normalize() * -FRICTION_MAGNITUDE)
         if self.velocity.magnitude() < FRICTION_MAGNITUDE:
