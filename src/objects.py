@@ -30,6 +30,3 @@ class Tree(Object):
 
         self.collider = Sprite(
             collider_sprite, self.position + pygame.Vector2(0, self.rect.size[1]/2 - collider_size[1]/2), ui_group, group)
-
-
-# position + pygame.Vector2(0, 128/2)
