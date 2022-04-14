@@ -1,4 +1,4 @@
-from math import cos, sin
+import math
 import pygame
 from pygame.locals import *
 
@@ -6,8 +6,8 @@ from config import *
 import objects
 
 PLAYER_ACCELERATION_MAGNITUDE = 0.6
-PLAYER_WALK_SPEED = 5
-PLAYER_RUN_SPEED = 10
+PLAYER_WALK_SPEED = 4
+PLAYER_RUN_SPEED = 6
 PLAYER_DASH_SPEED = 14
 FRICTION_MAGNITUDE = 0.4
 PLAYER_DASH_COOLDOWN = 2
@@ -27,6 +27,8 @@ class Entity(pygame.sprite.Sprite):
         self.velocity = pygame.Vector2()
         self.acceleration = pygame.Vector2()
 
+        self.collider = None
+
     def applyForce(self, force: pygame.Vector2) -> None:
         self.acceleration += force
 
@@ -35,6 +37,9 @@ class Entity(pygame.sprite.Sprite):
         self.position += self.velocity
 
         self.rect = self.image.get_rect(center=self.position)
+        if type(self.collider) == objects.Sprite:
+            self.collider.rect = self.collider.image.get_rect(
+                center=self.position + pygame.Vector2(0, self.collider.image.get_rect().h/2))
         self.acceleration *= 0
 
 
@@ -48,6 +53,12 @@ class Player(Entity):
             self.image, (50, 50))
         self.rect = self.image.get_rect(center=self.position)
 
+        collider_size = (3*32/4, 3*32/4)
+        collider_sprite = pygame.surface.Surface(collider_size, flags=SRCALPHA)
+        collider_sprite.fill((255, 0, 0, 80))
+
+        self.collider = objects.Sprite(
+            collider_sprite, self.position + pygame.Vector2(0, self.rect.size[1]/2 - collider_size[1]/2), ui_group, group)
         self.dash_indicator_image = pygame.image.load(
             "src/Assets/dash_indicator_active.png").convert_alpha()
         self.dash_indicator_image = pygame.transform.scale(
@@ -55,7 +66,6 @@ class Player(Entity):
 
         self.dash_indicator = objects.Sprite(
             self.dash_indicator_image, self.position + pygame.Vector2(50, 0), ui_group)
-        self.prev_angle = 0
 
         self.state = PLAYER_IDLE
 
@@ -75,7 +85,7 @@ class Player(Entity):
         elif self.velocity.magnitude() > PLAYER_DASH_SPEED:
             self.velocity = self.velocity.normalize() * (PLAYER_DASH_SPEED)
 
-            # Deceleration
+        # Deceleration
         if self.state != PLAYER_WALKING and self.state != PLAYER_RUNNING and self.velocity.magnitude() > 0:
             self.applyForce(self.velocity.normalize() * -FRICTION_MAGNITUDE)
         if self.velocity.magnitude() < FRICTION_MAGNITUDE:
@@ -123,9 +133,11 @@ class Player(Entity):
             relative_distance = relative_vector.magnitude()
 
             if relative_distance > self.rect.size[0]:
-                angle = relative_vector.angle_to(pygame.Vector2(1, 0))
+                angle_in_rad = -math.atan2(relative_vector.y,
+                                           relative_vector.x)
+                angle = angle_in_rad * 180/math.pi
                 offset = pygame.Vector2(
-                    50 * cos(angle/60), 50 * -sin(angle/60))
+                    50 * math.cos(angle_in_rad), 50 * -math.sin(angle_in_rad))
 
                 self.dash_indicator.image = pygame.transform.rotozoom(
                     self.dash_indicator_image, angle, 1)
@@ -133,31 +145,34 @@ class Player(Entity):
                     center=self.position + offset)
                 self.dash_indicator.add(self.group)
 
-                self.prev_angle = angle
-
-        if keys[K_LCTRL]:
-            self.state = PLAYER_RUNNING
-
         if keys[K_UP] or keys[K_w] and self.state != PLAYER_DASHING:
-            if self.state != PLAYER_RUNNING:
+            if keys[K_LCTRL]:
+                self.state = PLAYER_RUNNING
+            else:
                 self.state = PLAYER_WALKING
             self.applyForce(pygame.Vector2(
                 0, -PLAYER_ACCELERATION_MAGNITUDE))
 
         if keys[K_DOWN] or keys[K_s] and self.state != PLAYER_DASHING:
-            if self.state != PLAYER_RUNNING:
+            if keys[K_LCTRL]:
+                self.state = PLAYER_RUNNING
+            else:
                 self.state = PLAYER_WALKING
             self.applyForce(pygame.Vector2(
                 0, PLAYER_ACCELERATION_MAGNITUDE))
 
         if keys[K_LEFT] or keys[K_a] and self.state != PLAYER_DASHING:
-            if self.state != PLAYER_RUNNING:
+            if keys[K_LCTRL]:
+                self.state = PLAYER_RUNNING
+            else:
                 self.state = PLAYER_WALKING
             self.applyForce(
                 pygame.Vector2(-PLAYER_ACCELERATION_MAGNITUDE, 0))
 
         if keys[K_RIGHT] or keys[K_d] and self.state != PLAYER_DASHING:
-            if self.state != PLAYER_RUNNING:
+            if keys[K_LCTRL]:
+                self.state = PLAYER_RUNNING
+            else:
                 self.state = PLAYER_WALKING
             self.applyForce(pygame.Vector2(
                 PLAYER_ACCELERATION_MAGNITUDE, 0))

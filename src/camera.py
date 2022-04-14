@@ -18,7 +18,7 @@ class Camera(pygame.sprite.Group):
             self.sprites(), key=lambda sprite: sprite.rect.bottom)
 
         # Append UI elements at the end to always draw on top
-        for i in range(len(ysorted_sprites)):
+        for i in range(len(ysorted_sprites) - 1, -1, -1):
             if ui_group in ysorted_sprites[i].groups():
                 ysorted_sprites.append(ysorted_sprites.pop(i))
 
