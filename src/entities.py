@@ -41,7 +41,7 @@ class Entity(pygame.sprite.Sprite):
         # Move collider y, check for collisions
         self.collider.rect[1] += self.velocity.y
         collisions = self.getCollisions(targets)
-        # Resolve collisions in x axis
+        # Resolve collisions in y axis
         for target in collisions:
             if self.velocity.y > 0:
                 self.collider.rect.bottom = target.collider.rect.top
