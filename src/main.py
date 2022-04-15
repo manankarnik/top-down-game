@@ -28,8 +28,8 @@ def main() -> None:
         if event.type == KEYUP:
             player.keyup(event.key)
 
-    player.handleInput()
-    player.move()
+    player.keyheld()
+    player.moveAndSlide()
     camera_group.update()
     camera_group.render(player)
 
