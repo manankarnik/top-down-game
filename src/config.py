@@ -21,6 +21,8 @@ ui_group = pygame.sprite.Group()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
 
+trees = []
+
 
 def configure():
     # Initialize Pygame
