@@ -27,19 +27,50 @@ class Entity(pygame.sprite.Sprite):
         self.velocity = pygame.Vector2()
         self.acceleration = pygame.Vector2()
 
-        self.collider = None
+        self.collider = pygame.sprite.Sprite()
+
+    def getCollisions(self, targets) -> list:
+        collisons = []
+        for target in targets:
+            if self.collider.rect.colliderect(target.collider.rect):
+                collisons.append(target)
+        return collisons
 
     def applyForce(self, force: pygame.Vector2) -> None:
         self.acceleration += force
 
     def move(self) -> None:
         self.velocity += self.acceleration
-        self.position += self.velocity
+
+        self.position.x += self.velocity.x
+        collisions = self.getCollisions(trees)
+        for target in collisions:
+            if self.velocity.x > 0:
+                self.velocity.x = 0
+                self.collider.rect.right = target.collider.rect.left
+            elif self.velocity.x < 0:
+                self.velocity.x = 0
+                self.collider.rect.left = target.collider.rect.right
+            self.position.x = self.collider.rect.center[0]
+
+        self.position.y += self.velocity.y
+        collisions = self.getCollisions(trees)
+        for target in collisions:
+            if self.velocity.y > 0:
+                self.velocity.y = 0
+                self.collider.rect.bottom = target.collider.rect.top
+            elif self.velocity.y < 0:
+                self.velocity.y = 0
+                self.collider.rect.top = target.collider.rect.bottom
+            # self.position.y = self.collider.rect.center[1] - \
+            #     self.rect.size[1]/2 + self.collider.rect.h/2
+            self.position.y = self.collider.rect.center[1]
 
         self.rect = self.image.get_rect(center=self.position)
-        if type(self.collider) == objects.Sprite:
-            self.collider.rect = self.collider.image.get_rect(
-                center=self.position + pygame.Vector2(0, self.collider.image.get_rect().h/2))
+        # if type(self.collider) == objects.Sprite:
+        #     self.collider.rect = self.collider.image.get_rect(
+        #         center=self.position + pygame.Vector2(0, self.rect.size[1]/2 - self.collider.image.get_rect().h/2))
+        self.collider.rect = self.collider.image.get_rect(center=self.position)
         self.acceleration *= 0
 
 
@@ -53,7 +84,8 @@ class Player(Entity):
             self.image, (50, 50))
         self.rect = self.image.get_rect(center=self.position)
 
-        collider_size = (3*32/4, 3*32/4)
+        # collider_size = (25, 12.5)
+        collider_size = (50, 50)
         collider_sprite = pygame.surface.Surface(collider_size, flags=SRCALPHA)
         collider_sprite.fill((255, 0, 0, 80))
 
@@ -73,6 +105,7 @@ class Player(Entity):
         self.last_dash = 0
 
     def move(self) -> None:
+
         super().move()
 
         # Velocity constains
